@@ -72,11 +72,7 @@ NOTE: You must do this for the alluxio-master service and the alluxio-worker ser
 
 ### Step 5. Start the docker network and docker containers
 
-First, create a network:
-
-     docker network create alluxio-ranger-sandbox-env
-
-Then, use the docker compose script to start the Ranger and Alluxio containers.
+Use the docker compose script to start the Ranger and Alluxio containers.
 
      docker-compose up -d 
 
@@ -98,7 +94,11 @@ When finished working with the containers, you can stop them with the commands:
 
 If you are done testing and do not intend to spin up the docker images again, remove the network and disk volumes with the commands:
 
-     docker volume rm ranger_db_data ranger_es_data ranger_keystore alluxio-ranger-sandbox_ufs_storage
+     docker volume rm \
+            alluxio-ranger-sandbox_db_data \
+            alluxio-ranger-sandbox_es_data \
+            alluxio-ranger-sandbox_keystore \
+            alluxio-ranger-sandbox_ufs_storage
 
      docker network rm alluxio-ranger-sandbox_custom
 
