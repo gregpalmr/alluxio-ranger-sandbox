@@ -57,12 +57,20 @@ echo "user1:x:1001:1001:Alluxio User 1,,,:/tmp:/bin/bash" >> /etc/passwd
 echo "user2:x:1002:1001:Alluxio User 2,,,:/tmp:/bin/bash" >> /etc/passwd
 
 # Create a "/user" directory and "/tmp" directory in the under-filesystem (UFS)
-mkdir /data/alluxio/user
-mkdir /data/alluxio/tmp
+mkdir -p /data/alluxio/user
+mkdir -p /data/alluxio/user/user1
+mkdir -p /data/alluxio/user/user2
+mkdir -p /data/alluxio/tmp
+mkdir -p /data/alluxio/sensitive_data/dataset1
 
 # Enable the "sticky" bit on the user dir and tmp dir
-chmod 1777 /data/alluxio/user 
-chmod 1777 /data/alluxio/tmp 
+chmod 1777  /data/alluxio/user 
+chmod 1777  /data/alluxio/tmp 
+chmod  077  /data/alluxio/sensitive_data
+chown user1 /data/alluxio/user/user1
+chmod  077  /data/alluxio/user/user1
+chown user2 /data/alluxio/user/user2
+chmod  077  /data/alluxio/user/user2
 
 # Format the master node journal
 $ALLUXIO_HOME/bin/alluxio formatJournal
