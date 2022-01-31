@@ -1,0 +1,155 @@
+version: '3.7'
+
+services:
+
+  db:
+    image: mysql:5.7
+    container_name: ranger-db
+    hostname: db
+    networks:
+      custom:
+        ipv4_address: 172.23.0.2
+    volumes:
+      - db_data:/var/lib/mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: ranger
+      MYSQL_USER: ranger
+      MYSQL_PASSWORD: ranger
+    expose:
+      - "3306"
+
+  ranger-admin:
+    image: kadensungbincho/ranger-admin:2.1.0
+    container_name: ranger-admin
+    hostname: ranger
+    networks:
+      custom:
+        ipv4_address: 172.23.0.3
+    environment:
+      JAVA_OPTS: -Djavax.net.ssl.trustStore=/etc/ssl/certs/ranger/ranger-admin-truststore.jks -Djavax.net.ssl.trustStorePassword=changeme123
+    depends_on:
+      - db
+    volumes:
+      - ./config/ranger/admin/bootstrap.sh:/opt/ranger_admin/bootstrap.sh
+      - ./config/ranger/admin/install.properties:/opt/ranger_admin/install.properties
+      - ./config/ranger/admin/ranger-admin-site.xml:/opt/ranger_admin/ews/webapp/WEB-INF/classes/conf/ranger-admin-site.xml
+      - ./config/ranger/admin/ranger-admin-default-site.xml:/opt/ranger_admin/ews/webapp/WEB-INF/classes/conf/ranger-admin-default-site.xml
+      - ./config/ranger/admin/security-applicationContext.xml:/opt/ranger_admin/ews/webapp/WEB-INF/classes/conf/security-applicationContext.xml
+      - keystore:/etc/ssl/certs/ranger
+    command: ["./bootstrap.sh"]
+    ports:
+      - "6182:6182"
+    restart: always
+
+  ranger-usersync:
+    image: kadensungbincho/ranger-usersync:2.1.0
+    container_name: ranger-usersync
+    hostname: usersync
+    networks:
+      custom:
+        ipv4_address: 172.23.0.4
+    depends_on:
+      - ranger-admin
+    volumes:
+      - ./config/ranger/usersync/bootstrap.sh:/opt/ranger_usersync/bootstrap.sh
+      - ./config/ranger/usersync/install.properties:/opt/ranger_usersync/install.properties
+      - keystore:/etc/ssl/certs/ranger
+    command: ["./bootstrap.sh"]
+    restart: always
+  #  ranger-usersync-ldap:
+  #    image: kadensungbincho/ranger-usersync:2.1.0
+  #    container_name: ranger2.0.0-usersync-ldap
+  #    hostname: usersync-ldap
+  #    depends_on:
+  #      - ranger-admin
+  #    volumes:
+  #      - ./config/ranger/usersync/bootstrap-ldap.sh:/opt/ranger_usersync/bootstrap.sh
+  #      - ./config/ranger/usersync/install-ldap.properties:/opt/ranger_usersync/install-hdfs.properties
+  #      - ./config/ranger/usersync/templates:/templates
+  #      - ./config/ranger/usersync/conf.dist/log4j.properties:/opt/ranger_usersync/conf.dist/log4j.properties
+  #    command: ["./bootstrap.sh"]
+  
+  es:
+
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.5.0
+    container_name: ranger-es
+    hostname: es
+    networks:
+      custom:
+        ipv4_address: 172.23.0.5
+    environment:
+      - discovery.type=single-node
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - "ELASTIC_PASSWORD=elasticsearch"
+    volumes:
+      - es_data:/usr/share/elasticsearch/data
+    ports:
+      - 9200:9200
+
+  alluxio-master:
+
+    image: alluxio/alluxio-enterprise:latest
+    user: root
+    container_name: alluxio-master
+    hostname: alluxio-master
+    networks:
+      custom:
+        ipv4_address: 172.23.0.6
+    volumes:
+      - ./config/alluxio/alluxio-enterprise-license.json:/tmp/alluxio-install/license.json
+      - ./config/alluxio/conf:/tmp/alluxio-install/conf
+      - ./config/alluxio/bootstrap-master.sh:/entrypoint.sh
+      - keystore:/etc/ssl/certs/ranger
+      - ufs_storage:/data/alluxio
+    restart: always
+    environment:
+      ALLUXIO_HOME: /opt/alluxio
+    expose:
+      - "19999"
+    ports:
+      - "19999:19999"
+
+  alluxio-worker:
+
+    image: alluxio/alluxio-enterprise:latest
+    user: root
+    container_name: alluxio-worker
+    hostname: alluxio-worker
+    networks:
+      custom:
+        ipv4_address: 172.23.0.7
+    shm_size: '1gb'
+    volumes:
+      - ./config/alluxio/conf:/tmp/alluxio-install/conf
+      - ./config/alluxio/bootstrap-worker.sh:/entrypoint.sh
+      - keystore:/etc/ssl/certs/ranger
+      - ufs_storage:/data/alluxio
+    restart: always
+    environment:
+      ALLUXIO_HOME: /opt/alluxio
+    depends_on:
+      - alluxio-master
+    expose:
+      - "30000"
+    ports:
+      - "30000:30000"
+
+volumes:
+  db_data:
+    driver: local
+  es_data:
+    driver: local
+  ufs_storage:
+    driver: local
+  keystore:
+
+networks:
+  custom:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+      - subnet: 172.23.0.0/16
+        gateway: 172.23.0.1
