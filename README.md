@@ -2,8 +2,6 @@
 
 Run Alluxio Enterprise Edition with Apache Ranger for Authorizations
 
-This repo contains docker compose artifacts that launch a small Alluxio cluster that also runs Apache Hadoop and Apache Ranger.  
-
 ## Usage:
 
 ### Step 1. Install docker and docker-compose
