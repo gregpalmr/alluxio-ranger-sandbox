@@ -50,7 +50,7 @@ Install the docker-compose package
 
 If you don't already have an Alluxio Enterprise license file, contact your Alluxio salesperson at sales@alluxio.com.  Copy your license file to the alluxio staging directory:
 
-     cp ~/Downloads/alluxio-enterprise-license.json config/alluxio/alluxio/
+     cp ~/Downloads/alluxio-enterprise-license.json config/alluxio/
 
 ### Step 4. (Optional) Install your own Alluxio release
 
