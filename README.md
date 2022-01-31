@@ -110,21 +110,9 @@ When a Ranger policy is not available for a specific path, Alluxio will fall bac
 
      alluxio fs chmod 777 /
      alluxio fs chmod 077 /user
-     alluxio fs chmod 077 /...
+     alluxio fs chmod 077 /sensitive_data
 
-Include any sub-direct7ries that should be managed by Ranger policies.
-
-Open a BASH shell session the Alluxio master node and attempt to access the /user directory as a non-root user. A permission denied message like this will be displayed:
-
-     docker exec -it alluxio-master bash
-
-     su - user1
-
-     id
-     uid=1001(user1) gid=1001(alluxio-users)
-
-     alluxio fs ls /user/
-     Permission denied by authorization plugin: alluxio.exception.AccessControlException: Permission denied: user=user1, access=r--, path=/user: failed at user, inode owner=root, inode group=root, inode mode=rwx------
+Include any other sub-directries that should be managed by Ranger policies.
 
 ### Step 7. Create an Alluxio Ranger Service
 
