@@ -106,7 +106,7 @@ If you are done testing and do not intend to spin up the docker images again, re
 
 When a Ranger policy is not available for a specific path, Alluxio will fall back to its own POSIX style permissions to determine if a user has access permissions on a directory or file. Therefore, it is recommended that all users except for the privileged root user be denied access to all the directories except for the /tmp directory and their own home directory (if they have one). To enforce this, run the following Alluxio cli commands:
 
-     docker exec -it alluxio-master bash
+     docker exec -it alluxio-master bash --login
 
      alluxio fs chmod 777 /
      alluxio fs chmod 777 /user
@@ -227,7 +227,7 @@ Save the new policy by clicking on the "Add" button.
 
 Open a command shell into the Alluxio master container.
 
-     docker exec -it alluxio-master bash
+     docker exec -it alluxio-master bash --login
 
 Become the user1 user.
 
