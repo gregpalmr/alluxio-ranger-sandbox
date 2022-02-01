@@ -236,7 +236,7 @@ Become the user1 user.
 Use the "alluxio fs" command to verify that user1 can access the /sensitive_data1 directory tree.
 
      alluxio fs ls /sensitive_data1/dataset1/
-     -rw------- root root 283 PERSISTED 02-01-2022 14:59:45:457 100% /sensitive_data1/dataset1/data-file-001
+     -rw------- root root 283 PERSISTED 02-01-2022 14:59:45:457 100% /sensitive_data1/dataset1/data-file-000
 
 Verify that user1 cannot write to the /sensitive_data1 directory tree (since the Ranger policy did not allow writes).
 
@@ -253,24 +253,17 @@ Since there was no explicit Ranger policy permitting access to the /sensitive_da
 Continuing as user1, try to create a new file in the home directory for user1.
 
      alluxio fs copyFromLocal /etc/motd /user/user1/
+     Copied file:///etc/motd to /user/user1
 
-     alluxio fs ls /user/
-     drwx------  user1          alluxio-users                0       PERSISTED 01-31-2022 19:51:32:527  DIR /user/user1
+     alluxio fs ls /user/user1/
+     -rw------- user1 alluxio-users 283 PERSISTED 02-01-2022 15:55:15:912 100% /user/user1/motd
 
-Alluxio allows the file to be created because there is a Ranger policy allowing the alluxio-users group to access the /user directory and the /user/user1 sub-directory is owned by the /user1 user.
+Alluxio allows the file to be created because, even though there isn't a Ranger policy allowing the alluxio-users group to access the /user directory, Alluxio fell back on its POSIX style permissions allowed the write operation because the /user/user1 sub-directory is owned by the /user1 user.
 
-Exit the shell session for the user1 user and become the user2 user.
+Try the copyFromLocal command on the /user/user2 directory and it will fail because that directory is owned by the user2 user.
 
-     exit
-
-     su - user2
-
-Use the "alluxio fs" command to try to access the home directory for user1.
-
-     alluxio fs ls /user/user1
-     Permission denied by authorization plugin: alluxio.exception.AccessControlException: Permission denied: user=user2, access=--x, path=/user/user1: failed at /, inode owner=root, inode group=root, inode mode=rwx------
-
-Again, because there was no explicit policy allowing user2 to access the home directory for user1, Alluxio fell back on its POSIX style permissions and access was denied.
+     alluxio fs copyFromLocal /etc/motd /user/user2/
+     Permission denied by authorization plugin: alluxio.exception.AccessControlException: Permission denied: user=user1, access=r--, path=/user/user2: failed at user2, inode owner=user2, inode group=alluxio-users, inode mode=rwx------
 
 #### d. Check the Ranger audit log
 
