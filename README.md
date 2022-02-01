@@ -109,10 +109,12 @@ When a Ranger policy is not available for a specific path, Alluxio will fall bac
      docker exec -it alluxio-master bash
 
      alluxio fs chmod 777 /
-     alluxio fs chmod 077 /user
-     alluxio fs chmod 077 /sensitive_data
+     alluxio fs chmod 777 /user
+     alluxio fs chmod 777 /tmp
+     alluxio fs chmod 700 /sensitive_data1
+     alluxio fs chmod 700 /sensitive_data2
 
-Include any other sub-directries that should be managed by Ranger policies.
+Use the "chmod 700 ..." command on any other sub-directries that should be managed by Ranger policies.
 
 ### Step 7. Create an Alluxio Ranger Service
 
@@ -205,19 +207,19 @@ Click on the Ranger icon on the top of the page. Then, in the "Service Manager" 
 
 In the "Policy Details" section, enter:
 
-     Name for the Policy: allow-user-dir-access
+     Name for the Policy: allow-sensitive-data1-dir-access
 
-     Resource Path to apply the policy: /user
+     Resource Path to apply the policy: /sensitive_data1
 
-     Description: Allow users to access the /user directory 
+     Description: Allow users to access the /sensitive_data1 directory 
 
-     Recursive: Un-checked
+     Recursive: Checked
 
 In the "Allow Conditions" section, enter:
 
      Select Group: alluxio-users
 
-     Permissions: Execute, Read, Write
+     Permissions: Execute, Read
 
 Save the new policy by clicking on the "Add" button.
 
@@ -231,18 +233,22 @@ Become the user1 user.
 
      su - user1
 
-Use the "alluxio fs" command to verify that user1 can access the /user directory.
+Use the "alluxio fs" command to verify that user1 can access the /sensitive_data1 directory tree.
 
-     alluxio fs ls /user
-     drwx------  user1 alluxio-users  1 PERSISTED 01-31-2022 20:05:42:042  DIR /user/user1
-     drwx------  user2 alluxio-users  0 PERSISTED 01-31-2022 20:39:37:184  DIR /user/user2
+     alluxio fs ls /sensitive_data1/dataset1/
+     -rw------- root root 283 PERSISTED 02-01-2022 14:59:45:457 100% /sensitive_data1/dataset1/data-file-001
 
-Verify that user1 cannot access the /sensitive_data directory.
+Verify that user1 cannot write to the /sensitive_data1 directory tree (since the Ranger policy did not allow writes).
 
-     alluxio fs ls /sensitive_data
-     Permission denied by authorization plugin: alluxio.exception.AccessControlException: Permission denied: user=user1, access=r--, path=/sensitive_data: failed at sensitive_data, inode owner=root, inode group=root, inode mode=rwx------
+     alluxio fs copyFromLocal /etc/motd /sensitive_data1/dataset1/
+     Permission denied by authorization plugin: alluxio.exception.AccessControlException: Permission denied: user=user1, access=--x, path=/sensitive_data1/dataset1/motd: failed at /, inode owner=root, inode group=root, inode mode=rwx------
 
-Since there was no explicit Ranger policy permitting access to the /sensitive_data directory, Alluxio fell back on its internal POSIX style permissions. Since the /sensitive_data directory only had rwx------ access permissions defined on it and was owned by the root user, Alluxio would not allow user1 to access that directory. 
+Attempt to read from the /sensitive_data2 directory (where there is no Ranger policy allowing that operation).
+
+     alluxio fs ls /sensitive_data2/dataset1/
+     Permission denied by authorization plugin: alluxio.exception.AccessControlException: Permission denied: user=user1, access=--x, path=/sensitive_data2/dataset1: failed at /, inode owner=root, inode group=root, inode mode=rwx------
+
+Since there was no explicit Ranger policy permitting access to the /sensitive_data2 directory, Alluxio fell back on its internal POSIX style permissions. Since the /sensitive_data2 directory only had rwx------ access permissions defined on it and was owned by the root user, Alluxio would not allow user1 to access that directory. 
 
 Continuing as user1, try to create a new file in the home directory for user1.
 
