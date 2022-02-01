@@ -275,15 +275,11 @@ To verify that Alluxio is reading the access policies from Apache Ranger, you ca
 
      docker logs -f alluxio-master
 
-Then access HDFS via Alluxio as shown in step 6.c above. You will see entries in the Alluxio master node container that show "xaaudit" events:
+You will see audit entries like this:
 
-     2022-01-31 14:42:36,532 INFO  BaseAuditHandler - Audit Status Log: name=hdfs.async.batch.log4j, interval=05:23.849 minutes, events=2, succcessCount=2, totalEvents=18, totalSuccessCount=18
+2022-02-01 15:56:18,452 INFO  xaaudit - {"repoType":1,"repo":"alluxio-datacenter1-test","reqUser":"user1","evtTime":"2022-02-01 15:56:17.142","access":"READ","resource":"/user/user1","resType":"path","action":"read","result":1,"agent":"hdfs","policy":-1,"reason":"/user/user1","enforcer":"hadoop-acl","agentHost":"alluxio-master","logType":"RangerAudit","id":"0ca65ae8-94ac-4bb7-80e8-3ab6d4746218-0","seq_num":1,"event_count":1,"event_dur_ms":0,"tags":[],"additional_info":", \"accessTypes\":[read]","cluster_name":""}
+2022-02-01 15:56:18,452 INFO  xaaudit - {"repoType":1,"repo":"alluxio-datacenter1-test","reqUser":"user1","evtTime":"2022-02-01 15:56:17.145","access":"EXECUTE","resource":"/user/user1","resType":"path","action":"execute","result":1,"agent":"hdfs","policy":-1,"reason":"/user/user1","enforcer":"hadoop-acl","agentHost":"alluxio-master","logType":"RangerAudit","id":"02e99202-1a7f-4794-b762-252c8bc28069-0","seq_num":1,"event_count":1,"event_dur_ms":0,"tags":[],"additional_info":", \"accessTypes\":[execute]","cluster_name":""}
 
-     2022-01-31 14:42:36,532 INFO  xaaudit - {"repoType":1,"repo":"hdfs","reqUser":"user1","evtTime":"2021-11-01 14:42:34.683","access":"READ","resource":"/user","resType":"path","action":"read","result":1,"agent":"hdfs","policy":-1,"reason":"/user","enforcer":"hadoop-acl","agentHost":"alluxio-master","logType":"RangerAudit","id":"f2e39748-0185-44eb-a018-e18e503e70b1-0","seq_num":1,"event_count":1,"event_dur_ms":0,"tags":[],"additional_info":", \"accessTypes\":[read]","cluster_name":""}
-
-     2022-01-31 14:42:36,533 INFO  xaaudit - {"repoType":1,"repo":"hdfs","reqUser":"user1","evtTime":"2021-11-01 14:42:34.684","access":"EXECUTE","resource":"/user","resType":"path","action":"execute","result":1,"agent":"hdfs","policy":-1,"reason":"/user","enforcer":"hadoop-acl","agentHost":"alluxio-master","logType":"RangerAudit","id":"80bbe1fd-0655-4dbc-bacc-09fb993a5085-0","seq_num":1,"event_count":1,"event_dur_ms":0,"tags":[],"additional_info":", \"accessTypes\":[execute]","cluster_name":""}
-
-     2022-01-31 14:42:54,518 INFO  BaseAuditHandler - Audit Status Log: name=hdfs.async.batch, finalDestination=hdfs.async.batch.log4j, interval=01:02.978 minutes, events=5, succcessCount=2, totalEvents=51, totalSuccessCount=20
 
 ---
 
