@@ -7,6 +7,8 @@ echo
 
 echo "export ALLUXIO_HOME=/opt/alluxio" >> /etc/profile
 echo "export PATH=\$PATH:\$ALLUXIO_HOME/bin" >> /etc/profile
+sed -i '/PS1/d' /etc/profile
+echo "export PS1='\u@\h $ '" >> /etc/profile
 . /etc/profile
 
 # If a new Alluxio install tarball was specified, install it
@@ -52,25 +54,41 @@ chown -R root:root /opt/alluxio-enterprise-*
 chmod go+rw /opt/alluxio-enterprise-*/logs/user
 
 # Create a test alluxio user
-echo "alluxio-users:x:1001:alluxio-users" >> /etc/group
-echo "user1:x:1001:1001:Alluxio User 1,,,:/tmp:/bin/bash" >> /etc/passwd
-echo "user2:x:1002:1001:Alluxio User 2,,,:/tmp:/bin/bash" >> /etc/passwd
+grep alluxio-users /etc/group
+if [ "$?" != 0 ]; then
+     echo "alluxio-users:x:1001:alluxio-users" >> /etc/group
+fi
+grep user1 /etc/passwd
+if [ "$?" != 0 ]; then
+     echo "user1:x:1001:1001:Alluxio User 1,,,:/tmp:/bin/bash" >> /etc/passwd
+     echo "user2:x:1002:1001:Alluxio User 2,,,:/tmp:/bin/bash" >> /etc/passwd
+fi
 
 # Create a "/user" directory and "/tmp" directory in the under-filesystem (UFS)
-mkdir -p /data/alluxio/user
-mkdir -p /data/alluxio/user/user1
-mkdir -p /data/alluxio/user/user2
-mkdir -p /data/alluxio/tmp
-mkdir -p /data/alluxio/sensitive_data/dataset1
+if [ ! -f /data/alluxio/user ]; then
+     echo "John Smith,jsmith@email.com,555-1212" > /tmp/customers.csv
+     echo "Janis Joplin,jjoplin@email.com,555-1212" >> /tmp/customers.csv
+     echo "Frank Wright,fwright@email.com,555-1212" > /tmp/customers2.csv
+     echo "Cindy Penderson,cpenderson@email.com,555-1212" >> /tmp/customers2.csv
+     mkdir -p /data/alluxio/user
+     mkdir -p /data/alluxio/user/user1
+     mkdir -p /data/alluxio/user/user2
+     mkdir -p /data/alluxio/tmp
+     mkdir -p /data/alluxio/sensitive_data1/dataset1
+     mkdir -p /data/alluxio/sensitive_data2/dataset1
+     cp /tmp/customers.csv  /data/alluxio/sensitive_data1/dataset1/data_file_000
+     cp /tmp/customers2.csv /data/alluxio/sensitive_data2/dataset1/data_file_000
+fi
 
 # Enable the "sticky" bit on the user dir and tmp dir
 chmod 1777  /data/alluxio/user 
 chmod 1777  /data/alluxio/tmp 
-chmod  077  /data/alluxio/sensitive_data
+chmod -R 700  /data/alluxio/sensitive_data1
+chmod -R 700  /data/alluxio/sensitive_data2
 chown user1 /data/alluxio/user/user1
-chmod  077  /data/alluxio/user/user1
+chmod  700  /data/alluxio/user/user1
 chown user2 /data/alluxio/user/user2
-chmod  077  /data/alluxio/user/user2
+chmod  700  /data/alluxio/user/user2
 
 # Format the master node journal
 $ALLUXIO_HOME/bin/alluxio formatJournal
