@@ -1,6 +1,6 @@
 # alluxio-ranger-sandbox
 
-Run Alluxio Enterprise Edition with Apache Ranger for Authorizations
+Run Alluxio Enterprise Edition with Apache Ranger for Authorizations using Docker containers
 
 ## Usage:
 
