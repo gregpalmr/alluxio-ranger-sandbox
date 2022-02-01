@@ -223,7 +223,11 @@ In the "Allow Conditions" section, enter:
 
 Save the new policy by clicking on the "Add" button.
 
-#### c. Test access to the Alluxio filesystem
+### Step 9. Test access to the Alluxio file system
+
+Use the Alluxio CLI commands to test access to the file system.
+
+#### a. Open a shell session as the user1 user
 
 Open a command shell into the Alluxio master container.
 
@@ -233,15 +237,21 @@ Become the user1 user.
 
      su - user1
 
+#### b. Verify read access
+
 Use the "alluxio fs" command to verify that user1 can access the /sensitive_data1 directory tree.
 
      alluxio fs ls /sensitive_data1/dataset1/
      -rw------- root root 283 PERSISTED 02-01-2022 14:59:45:457 100% /sensitive_data1/dataset1/data-file-000
 
+#### c. Verify no write access
+
 Verify that user1 cannot write to the /sensitive_data1 directory tree (since the Ranger policy did not allow writes).
 
      alluxio fs copyFromLocal /etc/motd /sensitive_data1/dataset1/
      Permission denied by authorization plugin: alluxio.exception.AccessControlException: Permission denied: user=user1, access=--x, path=/sensitive_data1/dataset1/motd: failed at /, inode owner=root, inode group=root, inode mode=rwx------
+
+#### d. Verify no read, write access when no Ranger policy exists
 
 Attempt to read from the /sensitive_data2 directory (where there is no Ranger policy allowing that operation).
 
@@ -249,6 +259,8 @@ Attempt to read from the /sensitive_data2 directory (where there is no Ranger po
      Permission denied by authorization plugin: alluxio.exception.AccessControlException: Permission denied: user=user1, access=--x, path=/sensitive_data2/dataset1: failed at /, inode owner=root, inode group=root, inode mode=rwx------
 
 Since there was no explicit Ranger policy permitting access to the /sensitive_data2 directory, Alluxio fell back on its internal POSIX style permissions. Since the /sensitive_data2 directory only had rwx------ access permissions defined on it and was owned by the root user, Alluxio would not allow user1 to access that directory. 
+
+#### e. Verify write access on user's home directory
 
 Continuing as user1, try to create a new file in the home directory for user1.
 
@@ -265,11 +277,11 @@ Try the copyFromLocal command on the /user/user2 directory and it will fail beca
      alluxio fs copyFromLocal /etc/motd /user/user2/
      Permission denied by authorization plugin: alluxio.exception.AccessControlException: Permission denied: user=user1, access=r--, path=/user/user2: failed at user2, inode owner=user2, inode group=alluxio-users, inode mode=rwx------
 
-#### d. Check the Ranger audit log
+#### f. Check the Ranger audit log
 
 Back on the Ranger Admin Web UI, click on the "Audit" link at the top of the page. Then click on the "Access" tab and you will see an event documenting the policy enforcement.
 
-#### e. Check the Alluxio master logs
+#### g. Check the Alluxio master logs
 
 To verify that Alluxio is reading the access policies from Apache Ranger, you can view the log file for the Alluxio master container like this:
 
