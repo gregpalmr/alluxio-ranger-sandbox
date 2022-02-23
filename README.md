@@ -58,12 +58,12 @@ If you want to test your own Alluxio release, instead of using the release bundl
 
 a. Copy your Alluxio tarball file (.tar.gz) to a directory accessible by the docker-compose utility.
 
-b. Modify the docker-compose.yml file, to "mount" that file as a volume. The target mount point must be in "/tmp/alluxio-install/". For example:
+b. Modify the docker-compose.yml file, and add a new entry to the "volumes:" section for the alluxio-master and alluxio-worker services. The purpose is to "mount" your tarball file as a volume and the target mount point must be in "/tmp/alluxio-install/". For example:
 
      volumes:
        - ~/Downloads/alluxio-enterprise-2.7.0-SNAPSHOT-bin.tar.gz:/tmp/alluxio-install/alluxio-enterprise-2.7.0-SNAPSHOT-bin.tar.gz 
 
-c. Add an environment variable identifying the tarball file name. For example:
+c. Add a new environment variable to the alluxio-master and alluxio-worker services, identifying the tarball file name. For example:
 
      environment:
        ALLUXIO_TARBALL: alluxio-enterprise-2.7.0-SNAPSHOT-bin.tar.gz 
