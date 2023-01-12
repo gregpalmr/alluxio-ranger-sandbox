@@ -143,7 +143,7 @@ In the "Config Properties" section, define the following values:
 
      Password: rangeradmin1
 
-     Namenode URL: alluxio://alluxio-master:19998
+     Namenode URL: hdfs://localhost:8080  (This is not used by the Alluxio Ranger plugin)
 
      Authorization Enabled: Yes
 
