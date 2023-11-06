@@ -104,7 +104,11 @@ If you are done testing and do not intend to spin up the docker images again, re
 
 ### Step 6. Restrict access to the Alluxio file system
 
-When a Ranger policy is not available for a specific path, Alluxio will fall back to its own POSIX style permissions to determine if a user has access permissions on a directory or file. Therefore, it is recommended that all users except for the privileged root user be denied access to all the directories except for the /tmp directory and their own home directory (if they have one). To enforce this, run the following Alluxio cli commands:
+When a Ranger policy is not available for a specific path, Alluxio will, by default, fall back to its own POSIX style permissions to determine if a user has access permissions on a directory or file. The default mode can be changed by setting the alluxio.security.authorization.default.deny property in the alluxio-site.properties file to true. Like this:
+
+     alluxio.security.authorization.default.deny=true
+
+If you do not set that above property to true, then it is recommended that all users except for the privileged root user be denied access to all the directories except for the /tmp directory and their own home directory (if they have one). To enforce this, run the following Alluxio cli commands:
 
      docker exec -it alluxio-master bash --login
 
